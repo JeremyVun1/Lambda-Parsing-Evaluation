@@ -1,0 +1,94 @@
+options
+{
+	// static false means we can use more than one parser. Parser not put into static namespace
+	static = false;
+	output_directory="parser";
+}
+
+PARSER_BEGIN(SimpleSchemeParser)
+
+package parser;
+
+import java.io.*;
+import java.util.*;
+import ast.*;
+
+public class SimpleSchemeParser
+{
+}
+
+PARSER_END(SimpleSchemeParser)
+
+ArrayList<SchemeExpression> Parse():
+{
+	ArrayList<SchemeExpression> result = new ArrayList<SchemeExpression>();
+	SchemeExpression e;
+}
+{
+	(e = SchemeExpression() { result.add(e); })* <EOF>
+	{
+		return result;
+	}
+}
+
+SchemeExpression SchemeExpression():
+{
+	Token c;
+	Token i;
+	Token s;
+	SchemeExpression e1, e2, e3;
+}
+{
+		c = <Constant>
+		{
+			return new Constant(c);
+		}
+	|
+		i = <Identifier>
+		{
+			return new Variable(i);
+		}
+	|
+		LOOKAHEAD(2)
+		"(" "lambda" i = <Identifier> "." e1 = SchemeExpression() ")"
+		{
+			return new Abstraction(i, e1);
+		}
+	|
+		LOOKAHEAD(2)
+		"(" e1 = SchemeExpression() e2 = SchemeExpression() ")"
+		{
+			return new Application(e1, e2);
+		}
+	|
+		LOOKAHEAD(2)
+		"(" "define" i = <Identifier> e1 = SchemeExpression() ")"
+		{
+			return new Define(i, e1);
+		}
+	|
+		LOOKAHEAD(2)
+		"(" "load" s = <String> ")"
+		{
+			return new Load(s);
+		}
+	|
+		"(" "if" e1 = SchemeExpression() e2 = SchemeExpression() e3 = SchemeExpression() ")"
+		{
+			return new IfThenElse(e1, e2, e3);
+		}
+}
+
+TOKEN:
+{
+	<String : "\"" (~["\""])* "\"">
+    |
+	<Constant : ("-")? (["0"-"9"])+ ("." (["0"-"9"])*)? ("E" ("+"|"-")? (["0"-"9"])+)?>
+	|		
+	<Identifier : ["a"-"z","A"-"Z"] (["a"-"z","A"-"Z","0"-"9","_"])*>
+}
+
+SKIP :
+{ 
+	" "  | "\t" | "\r" | "\n" | <"//" (~["\n"])* "\n">
+}

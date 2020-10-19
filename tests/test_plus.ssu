@@ -1,0 +1,7 @@
+
+(load "Tests/plus")
+
+(define a 0.0)
+(define b 100.0)
+
+(if (isZero a) ((plus 1.0) 1.0) b)

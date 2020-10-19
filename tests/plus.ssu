@@ -1,0 +1,21 @@
+
+// rplus
+
+(define rplus
+   (lambda plus.
+      (lambda n .
+        (lambda m .
+          (if (notZero n)
+              ((plus (pred n)) (succ m))
+              //((plus (succ n)) (pred m))
+              m
+          )
+        )
+      )
+   )
+)
+
+(load "Tests/fix") 
+
+(define plus (fix rplus))
+
